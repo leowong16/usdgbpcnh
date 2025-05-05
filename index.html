@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>USD-HKD/CNH 实时汇率</title>
+    <title>GBP/USD-CNH 实时汇率</title>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         /* 根变量定义 - 用于主题颜色和透明度 */
@@ -414,7 +414,7 @@
             <div class="exchange-rate" id="exchange-rate">加载中...</div>
         </div>
         <div id="currency-type-container" class="down">
-            <span class="currency-type" id="currency-type">USD-HKD</span>
+            <span class="currency-type" id="currency-type">USD-CNH</span>
         </div>
     </div>
     <div class="time-display">
@@ -437,22 +437,22 @@
         let fetchInterval;
         let switchInterval;
         let secondsLeft = 30;
-        let currentCurrency = 'HKD'; // 当前显示的货币，初始为HKD
+        let currentCurrency = 'CNH'; // 当前显示的货币，初始为CNH
         
         const MAX_CONSECUTIVE_FAILURES = 3;
         const FETCH_INTERVAL = 5000; // 数据获取间隔
         const SWITCH_INTERVAL = 30000; // 切换间隔30秒
         
         // 代理URL
-        const PROXY_URL_HKD = "https://bdfn4usdhkd.2504588133.workers.dev/";
+        const PROXY_URL_GBP = "https://bdfn4gbp.2504588133.workers.dev/";
         const PROXY_URL_CNH = "https://bdfn.2504588133.workers.dev/";
         
         // 目标URL
-        const TARGET_URL_HKD = "https://finance.pae.baidu.com/vapi/v1/getquotation?group=huilv_minute&need_reverse_real=1&code=USDHKD";
+        const TARGET_URL_GBP = "https://finance.pae.baidu.com/vapi/v1/getquotation?group=huilv_minute&need_reverse_real=1&code=GBPCNH";
         const TARGET_URL_CNH = "https://finance.pae.baidu.com/vapi/v1/getquotation?group=huilv_minute&need_reverse_real=1&code=USDCNH";
         
         // 保存两种货币的最新数据
-        let hkdData = {
+        let gbpData = {
             currentRate: null,
             ratio: null,
             times: [],
@@ -521,12 +521,12 @@
         
         // 切换货币类型
         function switchCurrency() {
-            if (currentCurrency === 'HKD') {
+            if (currentCurrency === 'CNH') {
+                currentCurrency = 'GBP';
+                document.getElementById('currency-type').textContent = 'GBP-CNH';
+            } else {
                 currentCurrency = 'CNH';
                 document.getElementById('currency-type').textContent = 'USD-CNH';
-            } else {
-                currentCurrency = 'HKD';
-                document.getElementById('currency-type').textContent = 'USD-HKD';
             }
             
             // 更新显示数据
@@ -535,7 +535,7 @@
         
         // 根据当前货币类型获取对应的数据对象
         function getCurrentData() {
-            return currentCurrency === 'HKD' ? hkdData : cnhData;
+            return currentCurrency === 'GBP' ? gbpData : cnhData;
         }
         
         // 更新显示
@@ -562,14 +562,14 @@
             if (!isPageVisible) return; // 页面不可见时不更新
             
             // 获取两种货币的数据
-            fetchCurrencyData('HKD');
+            fetchCurrencyData('GBP');
             fetchCurrencyData('CNH');
         }
         
         // 获取特定货币的数据
         function fetchCurrencyData(currencyType) {
-            const proxyUrl = currencyType === 'HKD' ? PROXY_URL_HKD : PROXY_URL_CNH;
-            const targetUrl = currencyType === 'HKD' ? TARGET_URL_HKD : TARGET_URL_CNH;
+            const proxyUrl = currencyType === 'GBP' ? PROXY_URL_GBP : PROXY_URL_CNH;
+            const targetUrl = currencyType === 'GBP' ? TARGET_URL_GBP : TARGET_URL_CNH;
             const url = proxyUrl + targetUrl;
             
             var xhr = new XMLHttpRequest();
@@ -588,11 +588,11 @@
                             const ratio = parseFloat(data.Result.cur.ratio);
                             
                             // 更新对应货币的数据
-                            if (currencyType === 'HKD') {
-                                hkdData.currentRate = currentRate;
-                                hkdData.ratio = ratio;
-                                hkdData.chartData = data.Result.newMarketData;
-                                updateChartData(data.Result.newMarketData, 'HKD');
+                            if (currencyType === 'GBP') {
+                                gbpData.currentRate = currentRate;
+                                gbpData.ratio = ratio;
+                                gbpData.chartData = data.Result.newMarketData;
+                                updateChartData(data.Result.newMarketData, 'GBP');
                             } else {
                                 cnhData.currentRate = currentRate;
                                 cnhData.ratio = ratio;
@@ -605,7 +605,7 @@
                                 updateRateDisplay(currentRate, ratio);
                                 
                                 if (!chartInstance && data.Result.newMarketData) {
-                                    const dataObj = currencyType === 'HKD' ? hkdData : cnhData;
+                                    const dataObj = currencyType === 'GBP' ? gbpData : cnhData;
                                     plotChart(dataObj.times, dataObj.prices);
                                 }
                             }
@@ -795,9 +795,9 @@
                 });
 
                 // 更新对应货币的图表数据
-                if (currencyType === 'HKD') {
-                    hkdData.times = newTimes;
-                    hkdData.prices = newPrices;
+                if (currencyType === 'GBP') {
+                    gbpData.times = newTimes;
+                    gbpData.prices = newPrices;
                 } else {
                     cnhData.times = newTimes;
                     cnhData.prices = newPrices;
